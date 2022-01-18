@@ -22,6 +22,7 @@ public:
 	{
 		// want to open up 'database' and append 'key, value'
 		std::fstream file;
+
 		file.open("database", std::fstream::app);
 		file << key << ", " << value << std::endl;
 		file.close();
@@ -30,8 +31,34 @@ public:
 		return 0;
 	}
 
-	std::string db_get(std::string key)
+	std::string db_get(std::string search_key)
 	{
-		return "";
+		std::fstream file;
+		std::string line_key, line_value;
+		std::string latest_value = " "; // initialize in case key is not found
+
+		file.open("database", std::fstream::in);
+		while (file.good())
+		{
+			getline(file, line_key, ' '); // split at the first space because keys cannot have spaces
+
+			if (line_key == "") // the last line is blank and will be assigned to line_key at the end of file
+				continue; // so skip the rest to make file.bad()
+			else
+				line_key.pop_back();
+
+			// get the rest of the line with the default \n delimiter
+			getline(file, line_value);
+
+			// for some reason there is a space char at the front of line_value so
+			line_value.erase(0, 1);
+
+			// compare keys and update line_value if match
+			if (line_key == search_key)
+				latest_value = line_value;
+		}
+
+		std::cout << "Latest: " << latest_value << std::endl;
+		return latest_value;
 	}
 };

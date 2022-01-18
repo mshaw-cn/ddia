@@ -13,14 +13,21 @@
 */
 
 #include <iostream>
+#include <fstream>
 
 class Database
 {
 public:
 	int db_set(std::string key, std::string value)
 	{
+		// want to open up 'database' and append 'key, value'
+		std::fstream file;
+		file.open("database", std::fstream::app);
+		file << key << ", " << value << std::endl;
+		file.close();
+
 		std::cout << "Set: " << key << " As: " << value << std::endl;
-		return 1;
+		return 0;
 	}
 
 	std::string db_get(std::string key)

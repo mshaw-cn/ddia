@@ -50,9 +50,6 @@ public:
 			// get the rest of the line with the default \n delimiter
 			getline(file, line_value);
 
-			// for some reason there is a space char at the front of line_value so
-			line_value.erase(0, 1);
-
 			// compare keys and update line_value if match
 			if (line_key == search_key)
 				latest_value = line_value;

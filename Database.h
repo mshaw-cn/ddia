@@ -18,7 +18,7 @@
 class Database
 {
 public:
-	int db_set(std::string key, std::string value)
+	int db_set(const std::string& key, const std::string& value)
 	{
 		// want to open up 'database' and append 'key, value'
 		std::fstream file;
@@ -31,7 +31,7 @@ public:
 		return 0;
 	}
 
-	std::string db_get(std::string search_key)
+	std::string db_get(const std::string& search_key)
 	{
 		std::fstream file;
 		std::string line_key, line_value;

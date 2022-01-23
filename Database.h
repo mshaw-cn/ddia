@@ -8,23 +8,42 @@
 
 	Performance:
 	let N = { n : n is an entry in the db }
+	Initialization is O(N) as it creates m_hash_index on creation
 	'db_set' is O(1) as its append only
-	'db_get' is O(N) as it must go through all elements to find most recent
+	'db_get' is O(1) as it finds byte offset in m_hash_index and uses it to get value from that line in 'database'
 */
 
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 
 class Database
 {
+private:
+	// I just guessed at initial size
+	// TODO: Research proper size of byte offset
+	std::unordered_map<std::string, uint16_t> m_hash_index;
+
 public:
+	Database()
+	{
+		get_hash_index();
+	}
+
 	int db_set(const std::string& key, const std::string& value)
 	{
 		// want to open up 'database' and append 'key, value'
 		std::fstream file;
 
 		file.open("database", std::fstream::app);
-		file << key << ", " << value << std::endl;
+		
+		file << key << ", ";
+
+		// right before we commit value, lets get byte offset and update m_hash_index
+		file.seekp(0, std::ios_base::end);
+
+		file << value << std::endl;
+
 		file.close();
 
 		std::cout << "Set: " << key << " As: " << value << std::endl;
@@ -33,29 +52,51 @@ public:
 
 	std::string db_get(const std::string& search_key)
 	{
-		std::fstream file;
-		std::string line_key, line_value;
-		std::string latest_value = " "; // initialize in case key is not found
+		std::string line_value = "";
 
-		file.open("database", std::fstream::in);
-		while (file.good())
+		// check if search_key is in hash_index
+		auto search = m_hash_index.find(search_key);
+		if (search != m_hash_index.end())
 		{
-			getline(file, line_key, ' '); // split at the first space because keys cannot have spaces
+			std::fstream file;
 
-			if (line_key == "") // the last line is blank and will be assigned to line_key at the end of file
-				continue; // so skip the rest to make file.bad()
-			else
-				line_key.pop_back();
+			file.open("database", std::fstream::in);
 
-			// get the rest of the line with the default \n delimiter
+			file.seekg(m_hash_index[search_key]);
 			getline(file, line_value);
 
-			// compare keys and update line_value if match
-			if (line_key == search_key)
-				latest_value = line_value;
+			file.close();
 		}
+		std::cout << "Found: " << line_value << std::endl;
 
-		std::cout << "Latest: " << latest_value << std::endl;
-		return latest_value;
+		return line_value;
+	}
+private:
+	void get_hash_index()
+	{
+		/* we want to update the m_hash_index where each key in the index relates to a byte offset
+		of where the key can be found in the database. This will allow for O(1) search instead of O(n)
+		provided that the hash_index can fit in memory.*/
+		
+		std::fstream file;
+		file.open("database", std::fstream::in);
+		
+		// extract key from line using getline and the fact that the format is "key, value"
+		std::string line_key;
+		while (file.good())
+		{
+			getline(file, line_key, ' '); // extracts "key," or ""
+
+			if (line_key == "")
+				continue; 
+			else 
+			{
+				line_key.pop_back(); // gets rid of ','
+				m_hash_index[line_key] = uint16_t(file.tellg());
+			}
+
+			getline(file, line_key); // just moving to start of new line. probably a better way
+		}
+		file.close();
 	}
 };

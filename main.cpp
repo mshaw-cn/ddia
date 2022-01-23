@@ -14,9 +14,6 @@ int main()
 		// keys cannot include spaces
 		// value can include spaces so assume every char after 2nd space is value
 
-		// could do this without creating new strings by pointing to line
-		// TODO: don't create strings every loop while std::cin has all the info we need
-
 		std::string line, key, value;
 
 		getline(std::cin, line);
@@ -32,7 +29,7 @@ int main()
 			// space_location - 4 gives length of substring
 			key = line.substr(4, space_location - 4);
 			// assign value to rest of cin and give it to db_set
-			value = line.substr(space_location);
+			value = line.substr(space_location + 1); // plus one to get rid of leading space
 			db.db_set(key, value);
 		}
 		else

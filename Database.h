@@ -40,13 +40,13 @@ public:
 		file << key << ", ";
 
 		// right before we commit value, lets get byte offset and update m_hash_index
-		file.seekp(0, std::ios_base::end);
+		m_hash_index[key] = file.tellg();
 
 		file << value << std::endl;
 
 		file.close();
 
-		std::cout << "Set: " << key << " As: " << value << std::endl;
+		std::cout << "Make: " << key << " This: " << value << std::endl;
 		return 0;
 	}
 
